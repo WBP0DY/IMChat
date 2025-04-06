@@ -8,16 +8,11 @@ import com.wbp.mallchat.common.user.dao.UserDao;
 import com.wbp.mallchat.common.user.domain.dto.WSChannelExtraDTO;
 import com.wbp.mallchat.common.user.domain.entity.User;
 import com.wbp.mallchat.common.user.service.LoginService;
-import com.wbp.mallchat.common.websocket.enums.WSRespTypeEnum;
 import com.wbp.mallchat.common.websocket.service.WebSocketService;
 import com.wbp.mallchat.common.websocket.service.adapter.WebSocketAdapter;
-import com.wbp.mallchat.common.websocket.vo.req.WSBaseReq;
 import com.wbp.mallchat.common.websocket.vo.resp.WSBaseResp;
-import com.wbp.mallchat.common.websocket.vo.resp.ws.WSLoginUrl;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import jdk.nashorn.internal.parser.Token;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
@@ -43,7 +38,7 @@ public class WebSocketServiceImpl implements WebSocketService {
     /**
      * 管理所有用户的连接（登陆态/游客）
      */
-    private static final ConcurrentMap<ChannelHandlerContext, WSChannelExtraDTO> ONLINE_WS_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Channel, WSChannelExtraDTO> ONLINE_WS_MAP = new ConcurrentHashMap<>();
     public static final int MAXIMUM_SIZE = 10000;
     public static final Duration DURATION = Duration.ofHours(1);
     /**
@@ -63,10 +58,9 @@ public class WebSocketServiceImpl implements WebSocketService {
     }
 
     @Override
-    public void connect(ChannelHandlerContext ctx) {
-        ONLINE_WS_MAP.put(ctx, new WSChannelExtraDTO());
+    public void connect(Channel channel) {
+        ONLINE_WS_MAP.put(channel, new WSChannelExtraDTO());
     }
-
     @Override
     public void handleLoginReq(Channel channel) throws WxErrorException {
         // 生成随机码
@@ -89,13 +83,41 @@ public class WebSocketServiceImpl implements WebSocketService {
         WAIT_LOGIN_MAP.invalidate(remove);
         // 获取token
         String token = loginService.login(user.getId());
-        sendMsg(channel, WebSocketAdapter.buildResp(user, token));
+        loginSuccess(channel, token, user);
     }
 
     @Override
     public void waitAuthorize(Integer code) {
         Channel channel = WAIT_LOGIN_MAP.getIfPresent(code);
         sendMsg(channel, WebSocketAdapter.buildWaitAuthorize());
+    }
+
+    /**
+     * 用户进行登录认证
+     *
+     * @param channel 连接
+     * @param token token值
+     */
+    @Override
+    public void authorize(Channel channel, String token) {
+        Long validUid = loginService.getValidUid(token);
+        if (Objects.nonNull(validUid)) {
+            // token有效，返回登录成功
+            User userid = userDao.getById(validUid);
+            loginSuccess(channel, token, userid);
+        } else {
+            // token无效，返回用户重新登录
+            sendMsg(channel, WebSocketAdapter.buildInvalidTokenResp());
+        }
+    }
+
+    private void loginSuccess(Channel channel, String token, User userid) {
+        // 保存channel对应的uid
+        WSChannelExtraDTO wsChannelExtraDTO = ONLINE_WS_MAP.get(channel);
+        wsChannelExtraDTO.setUid(userid.getId());
+        // todo 用户上线成功的事件
+        // 推送成功消息
+        sendMsg(channel, WebSocketAdapter.buildResp(userid, token));
     }
 
     private void sendMsg(Channel channel, WSBaseResp<?> wsBaseResp) {

@@ -13,6 +13,7 @@ import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlOutMessage;
+import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,7 +69,7 @@ public class WXMsgServiceImpl implements WXMsgService {
             userService.saveUser(userBuild);
         }
         // 用户注册成功并且授权成功
-        if (Objects.nonNull(user) && Objects.nonNull(user.getAvatar())) {
+        if (Objects.nonNull(user) &&  StringUtils.isNotEmpty(user.getAvatar())) {
             // 登录成功，通过code给channel推送消息
             webSocketService.scanLoginSuccess(code, fromUser);
             return null;

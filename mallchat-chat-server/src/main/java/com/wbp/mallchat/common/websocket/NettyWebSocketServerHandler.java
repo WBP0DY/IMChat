@@ -2,31 +2,42 @@ package com.wbp.mallchat.common.websocket;
 
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
+import com.google.common.base.Strings;
 import com.wbp.mallchat.common.websocket.enums.WSBaseReqEnum;
 import com.wbp.mallchat.common.websocket.service.WebSocketService;
 import com.wbp.mallchat.common.websocket.vo.req.WSBaseReq;
+import com.wbp.mallchat.utils.NettyUtil;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
 
+@Slf4j
+@ChannelHandler.Sharable
 public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
     WebSocketService webSocketService;
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         webSocketService = SpringUtil.getBean(WebSocketService.class);
-        webSocketService.connect(ctx);
+        webSocketService.connect(ctx.channel());
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
-            System.out.println("握手完成");
+            log.info("握手成功");
+            String token = NettyUtil.getAttr(ctx.channel(), NettyUtil.TOKEN);
+            if (Objects.nonNull(token)) {
+                webSocketService.authorize(ctx.channel(), token);
+            }
         }else if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.READER_IDLE) {
@@ -57,10 +68,14 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
         switch (WSBaseReqEnum.of(bean.getType())) {
             case LOGIN:
                 webSocketService.handleLoginReq(channelHandlerContext.channel());
+                break;
             case AUTHORIZE:
+                webSocketService.authorize(channelHandlerContext.channel(), bean.getData());
                 break;
             case HEARTBEAT:
                 break;
+            default:
+                log.info("未知类型");
         }
     }
 }

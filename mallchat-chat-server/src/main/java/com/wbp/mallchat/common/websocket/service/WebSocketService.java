@@ -7,11 +7,13 @@ import me.chanjar.weixin.common.error.WxErrorException;
 public interface WebSocketService {
     void offLine(Channel channel);
 
-    void connect(ChannelHandlerContext ctx);
+    void connect(Channel ctx);
 
     void handleLoginReq(Channel channel) throws WxErrorException;
 
     void scanLoginSuccess(Integer remove, String openid);
 
     void waitAuthorize(Integer code);
+
+    void authorize(Channel channel, String token);
 }
