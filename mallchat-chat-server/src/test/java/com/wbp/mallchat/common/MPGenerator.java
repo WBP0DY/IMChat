@@ -31,7 +31,7 @@ public class MPGenerator {
         //todo 要改输出路径
         globalConfig.setOutputDir(System.getProperty("user.dir") + "/mallchat-chat-server/src/main/java");
         //设置作者名字
-        globalConfig.setAuthor("<a href=\"https://github.com/zongzibinbin\">abin</a>");
+        globalConfig.setAuthor("wbp");
         //去掉service的I前缀,一般只需要设置service就行
         globalConfig.setServiceImplName("%sDao");
         autoGenerator.setGlobalConfig(globalConfig);
@@ -55,9 +55,11 @@ public class MPGenerator {
         strategyConfig.setColumnNaming(NamingStrategy.underline_to_camel);
         //字段和表注解
         strategyConfig.setEntityTableFieldAnnotationEnable(true);
+        // 关闭对 BaseMapper<T> 的继承
+        strategyConfig.setSuperEntityClass("");
         //todo 这里修改需要自动生成的表结构
         strategyConfig.setInclude(
-                "user"
+                "item_config", "user_backpack"
         );
         //自动填充字段,在项目开发过程中,例如创建时间，修改时间,每次，都需要我们来指定，太麻烦了,设置为自动填充规则，就不需要我们赋值咯
         List<TableFill> list = new ArrayList<TableFill>();

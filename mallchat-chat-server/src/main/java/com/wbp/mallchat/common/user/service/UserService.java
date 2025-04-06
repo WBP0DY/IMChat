@@ -7,7 +7,7 @@ import com.wbp.mallchat.common.user.domain.entity.User;
  * 用户表 服务类
  * </p>
  *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
+ * @author wbp
  * @since 2025-02-24
  */
 public interface UserService {

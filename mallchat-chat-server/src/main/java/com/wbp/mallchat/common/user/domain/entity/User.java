@@ -15,7 +15,7 @@ import lombok.*;
  * 用户表
  * </p>
  *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
+ * @author wbp
  * @since 2025-02-24
  */
 @Data
