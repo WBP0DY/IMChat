@@ -1,6 +1,7 @@
 package com.wbp.mallchat.common.websocket;
 
 import cn.hutool.core.net.url.UrlBuilder;
+
 import com.wbp.mallchat.utils.NettyUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

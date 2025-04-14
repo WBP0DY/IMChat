@@ -2,11 +2,10 @@ package com.wbp.mallchat.common.websocket;
 
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
-import com.google.common.base.Strings;
+import com.wbp.mallchat.utils.NettyUtil;
 import com.wbp.mallchat.common.websocket.enums.WSBaseReqEnum;
 import com.wbp.mallchat.common.websocket.service.WebSocketService;
 import com.wbp.mallchat.common.websocket.vo.req.WSBaseReq;
-import com.wbp.mallchat.utils.NettyUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;

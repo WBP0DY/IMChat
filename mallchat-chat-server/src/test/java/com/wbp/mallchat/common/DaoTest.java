@@ -2,6 +2,7 @@ package com.wbp.mallchat.common;
 
 import com.wbp.mallchat.common.user.dao.UserDao;
 import com.wbp.mallchat.common.user.domain.entity.User;
+import com.wbp.mallchat.common.user.service.LoginService;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
@@ -31,6 +32,9 @@ public class DaoTest {
 
     @Autowired
     private ThreadPoolTaskExecutor threadPoolExecutor;
+
+    @Autowired
+    private LoginService loginService;
 
     @Test
     public void getUser () {
@@ -65,8 +69,8 @@ public class DaoTest {
         );
     }
 
-    @Async
-    public void setUserDao () {
-
+    @Test
+    public void jwt () {
+        System.out.println(loginService.login(3L));
     }
 }
